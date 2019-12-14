@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'bloc/CompanyRateBloc.dart';
-import 'vo/CompanyRate.dart';
+import '../bloc/CompanyRateBloc.dart';
+import '../vo/CompanyRate.dart';
 
 class RemittanceDetails extends StatefulWidget {
 

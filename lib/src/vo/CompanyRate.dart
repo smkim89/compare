@@ -12,4 +12,11 @@ class CompanyRate {
         this.currency,
         this.remittanceOption,
         this.rate});
+
+  CompanyRate.fromJson(Map json)
+      : companyName = json['companyName'],
+        countryCode = json['countryCode'],
+        currency = json['currency'],
+        remittanceOption = json['remittanceOption'],
+        rate = json['rate'];
 }
