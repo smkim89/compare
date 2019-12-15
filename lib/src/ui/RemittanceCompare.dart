@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:compare/src/vo/CompanyRate.dart';
+import 'package:compare/src/vo/Currency.dart';
+import 'package:compare/src/vo/RemittanceOption.dart';
 import 'package:compare/src/bloc/RemittanceRateBloc.dart';
 import 'package:compare/src/bloc/RemittanceRateProvider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final remittanceRateBloc = RemittanceRateProvider.of(context);
-
+    remittanceRateBloc.getCurrency();
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(title: Text('Compare Remittance')),
@@ -28,46 +31,69 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  _buildCurrencyAndRemittanceOptionSection(RemittanceRateBloc remittanceRateBloc) {
-    return Container(
+  _buildCurrencyAndRemittanceOptionSection(
+      RemittanceRateBloc remittanceRateBloc) {
+    return StreamBuilder(
+        stream: remittanceRateBloc.currencyStreamResults,
+        builder: (context, snapshot) {
+          return Container(
 //      margin: EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          DropdownButton(
-              hint: Text('Please choose a Curreny'),
-              // Not necessary for Option 1
-              value: _selectedCurrency,
-              onChanged: (newValue) {
-                remittanceRateBloc.getTodo();
-                setState(() {
-                  _selectedCurrency = newValue;
-                });
-              },
-              items: _currencyList.map((location) {
-                return DropdownMenuItem(
-                  child: new Text(location),
-                  value: location,
-                );
-              }).toList()),
-          DropdownButton(
-              hint: Text('Remittance Options'),
-              // Not necessary for Option 1
-              value: _selectedRemittanceOption,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedRemittanceOption = newValue;
-                });
-              },
-              items: _remittanceOptions.map((location) {
-                return DropdownMenuItem(
-                  child: new Text(location),
-                  value: location,
-                );
-              }).toList()),
-        ],
-      ),
-    );
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                DropdownButton(
+                    hint: Text('Please choose a Curreny'),
+                    // Not necessary for Option 1
+                    value: _selectedCurrency,
+                    onChanged: (newValue) {
+                      remittanceRateBloc.getCompanyRate();
+                      setState(() {
+                        _selectedCurrency = newValue;
+                      });
+                    },
+                    items: _bulidCurrencyDropButtonWidjet(snapshot.data)),
+                DropdownButton(
+                    hint: Text('Remittance Options'),
+                    // Not necessary for Option 1
+                    value: _selectedRemittanceOption,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedRemittanceOption = newValue;
+                      });
+                    },
+                    items: _remittanceOptions.map((location) {
+                      return DropdownMenuItem(
+                        child: new Text(location),
+                        value: location,
+                      );
+                    }).toList()),
+              ],
+            ),
+          );
+        });
+  }
+
+  _bulidCurrencyDropButtonWidjet(List<Currency> list) {
+    List<DropdownMenuItem> newList = new List<DropdownMenuItem>();
+    if (list == null || list.length == 0) {
+      return newList;
+    }
+
+    newList = list
+        .map((companyRate) => DropdownMenuItem(
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    new Text(companyRate.currency),
+                    CachedNetworkImage(
+                      imageUrl: companyRate.currencyImg,
+                    )
+                  ]),
+              value: companyRate.currency,
+            ))
+        .toList();
+
+    return newList;
   }
 
   _buildToCurrencySection() {
@@ -76,9 +102,17 @@ class _HomeScreenState extends State<HomeScreen> {
 //      margin: EdgeInsets.all(16),
       child: Row(
         children: <Widget>[
-          Expanded(child: TextField()),
+          Expanded(
+              child: TextField(
+            keyboardType: TextInputType.number,
+
+            onChanged: (text) {
+
+              print("Text $text");
+            },
+          )),
           new Icon(MdiIcons.equal),
-          Expanded(child: TextField()),
+          Expanded(child: TextField(keyboardType: TextInputType.number)),
         ],
       ),
     );
@@ -126,10 +160,16 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 List<DataRow> _createRows(List<CompanyRate> list) {
+
+
+
   List<DataRow> newList = new List<DataRow>();
   if (list == null || list.length == 0) {
     return newList;
   }
+
+  fromKrwCurrency = list[0].rate;
+  fromCurrencyRate = 1/ list[0].rate;
 
   newList = list
       .map((companyRate) => DataRow(cells: [
@@ -142,21 +182,18 @@ List<DataRow> _createRows(List<CompanyRate> list) {
   return newList;
 }
 
-Widget _buildContainer() {
-  return Material(
-    color: Colors.blue,
-    child: InkWell(
-      onTap: () => print("Container pressed"), // handle your onTap here
-      child: Container(height: 200, width: 200),
-    ),
-  );
-}
-
 List<String> _currencyList = ['BDT', 'USD', 'KHR', 'PHP']; // Option 1
 String _selectedCurrency; // Option 2
 
 String _selectedRemittanceOption; // Option 2
 List<String> _remittanceOptions = ['CASH_PICK_UP', 'BANK_TRANSFER']; // Option 2
+
+
+double fromKrwCurrency; // Option 2
+double fromCurrencyRate; // Option 2
+double krwAmount;
+double currencyAmount;
+
 
 var companyRateList = <CompanyRate>[
   CompanyRate(
