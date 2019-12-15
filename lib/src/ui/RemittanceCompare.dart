@@ -83,17 +83,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     newList = list
-        .map((companyRate) => DropdownMenuItem(
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    new Text(companyRate.currency),
-                    CachedNetworkImage(
-                      imageUrl: companyRate.currencyImg,
-                    )
-                  ]),
-              value: companyRate.currency,
-            ))
+        .map((companyRate) =>
+        DropdownMenuItem(
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                new Text(companyRate.currency),
+                CachedNetworkImage(
+                    imageUrl: companyRate.currencyImg,
+                    height: 50.0,
+                    width: 50.0,
+                    fit: BoxFit.cover,
+                )
+              ]),
+          value: companyRate.currency,
+        ))
         .toList();
 
     return newList;
@@ -112,9 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 autofocus: true,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Enter Amount',
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                  border: InputBorder.none,
+                  hintText: 'Enter Amount',
+                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                 ),
                 onChanged: (amount) {
                   setState(() {
@@ -122,16 +126,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     krwAmount = double.parse(krwAmount.toStringAsFixed(2));
                     currencyAmount = int.parse(amount);
                   });
-
                 },
               )),
           new Icon(MdiIcons.equal),
           //KRW
           Expanded(
               child: TextField(
-                controller: TextEditingController()..text = krwAmount==null? "":krwAmount.toString(),
+                controller: TextEditingController()
+                  ..text = krwAmount == null ? "" : krwAmount.toString(),
                 readOnly: true,
                 keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'KRW(원)',
+                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                ),
 
               ))
         ],
@@ -190,11 +199,12 @@ List<DataRow> _createRows(List<CompanyRate> list) {
   fromCurrencyRate = 1 / list[0].rate;
 
   newList = list
-      .map((companyRate) => DataRow(cells: [
-            DataCell(Text(companyRate.companyName), onTap: () {}),
-            DataCell(Text(companyRate.rate.toString()), onTap: () {}),
-            DataCell(Text(companyRate.remittanceOption), onTap: () {}),
-          ]))
+      .map((companyRate) =>
+      DataRow(cells: [
+        DataCell(Text(companyRate.companyName), onTap: () {}),
+        DataCell(Text(companyRate.rate.toString()), onTap: () {}),
+        DataCell(Text(companyRate.remittanceOption), onTap: () {}),
+      ]))
       .toList();
 
   return newList;
