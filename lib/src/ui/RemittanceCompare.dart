@@ -16,7 +16,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final remittanceRateBloc = RemittanceRateProvider.of(context);
+
+
     remittanceRateBloc.getCurrency();
+
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(title: Text('Compare Remittance')),
@@ -46,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Not necessary for Option 1
                     value: _selectedCurrency,
                     onChanged: (newValue) {
-                      remittanceRateBloc.getCompanyRate();
+                      remittanceRateBloc.getCompanyRate(newValue);
                       setState(() {
                         _selectedCurrency = newValue;
                       });
@@ -102,17 +105,35 @@ class _HomeScreenState extends State<HomeScreen> {
 //      margin: EdgeInsets.all(16),
       child: Row(
         children: <Widget>[
+          // currency Field
           Expanded(
               child: TextField(
-            keyboardType: TextInputType.number,
+                controller: _textController,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Enter Amount',
+                    contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                ),
+                onChanged: (amount) {
+                  setState(() {
+                    krwAmount = double.parse(amount) * fromCurrencyRate;
+                    krwAmount = double.parse(krwAmount.toStringAsFixed(2));
+                    currencyAmount = int.parse(amount);
+                  });
 
-            onChanged: (text) {
-
-              print("Text $text");
-            },
-          )),
+                },
+              )),
           new Icon(MdiIcons.equal),
-          Expanded(child: TextField(keyboardType: TextInputType.number)),
+          //KRW
+          Expanded(
+              child: TextField(
+                controller: TextEditingController()..text = krwAmount==null? "":krwAmount.toString(),
+                readOnly: true,
+                keyboardType: TextInputType.number,
+
+              ))
         ],
       ),
     );
@@ -160,16 +181,13 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 List<DataRow> _createRows(List<CompanyRate> list) {
-
-
-
   List<DataRow> newList = new List<DataRow>();
   if (list == null || list.length == 0) {
     return newList;
   }
 
-  fromKrwCurrency = list[0].rate;
-  fromCurrencyRate = 1/ list[0].rate;
+  fromKrwCurrencyRate = list[0].rate;
+  fromCurrencyRate = 1 / list[0].rate;
 
   newList = list
       .map((companyRate) => DataRow(cells: [
@@ -188,12 +206,10 @@ String _selectedCurrency; // Option 2
 String _selectedRemittanceOption; // Option 2
 List<String> _remittanceOptions = ['CASH_PICK_UP', 'BANK_TRANSFER']; // Option 2
 
-
-double fromKrwCurrency; // Option 2
+double fromKrwCurrencyRate; // Option 2
 double fromCurrencyRate; // Option 2
 double krwAmount;
-double currencyAmount;
-
+int currencyAmount;
 
 var companyRateList = <CompanyRate>[
   CompanyRate(
@@ -215,3 +231,5 @@ var companyRateList = <CompanyRate>[
       remittanceOption: "CASH_PICK_UP",
       rate: 10.55)
 ];
+
+final TextEditingController _textController = new TextEditingController();

@@ -59,7 +59,7 @@ class API {
 
 
 
-  Future<List<CompanyRate>> getCompanyRateList() async {
+  Future<List<CompanyRate>> getCompanyRateList(String currency) async {
 
     return tempList;
   }
