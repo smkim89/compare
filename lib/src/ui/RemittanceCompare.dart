@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:compare/src/vo/CompanyRate.dart';
 import 'package:compare/src/vo/Currency.dart';
-import 'package:compare/src/vo/RemittanceOption.dart';
 import 'package:compare/src/bloc/RemittanceRateBloc.dart';
 import 'package:compare/src/bloc/RemittanceRateProvider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(title: Text('Compare Remittance')),
+      appBar: AppBar(title: Text('TRANSMOA')),
       body: ListView(
         children: <Widget>[
           _buildCurrencyAndRemittanceOptionSection(remittanceRateBloc),
@@ -88,13 +87,15 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
+                Image.asset('images/flag/flag_'+companyRate.country.toLowerCase()+'.png' , width: 30, height: 30,),
                 new Text(companyRate.currency),
-                CachedNetworkImage(
-                    imageUrl: companyRate.currencyImg,
-                    height: 50.0,
-                    width: 50.0,
-                    fit: BoxFit.cover,
-                )
+
+//                CachedNetworkImage(
+//                    imageUrl: companyRate.currencyImg,
+//                    height: 50.0,
+//                    width: 50.0,
+//                    fit: BoxFit.cover,
+//                )
               ]),
           value: companyRate.currency,
         ))

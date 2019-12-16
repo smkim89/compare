@@ -48,10 +48,14 @@ class API {
 
   var _currencyList = <Currency>[
     Currency(
+        country: "US",
+        countryName: "USA",
         currency: "USD",
         currencyImg: "https://shop.r10s.jp/tospa/cabinet/406104.gif",
         currencyCode: "\$"),
     Currency(
+        country: "BD",
+        countryName: "Bangladesh",
         currency: "BDT",
         currencyImg: "http://image.auction.co.kr/itemimage/c0/41/3a/c0413a956.jpg",
         currencyCode: "\$"),
