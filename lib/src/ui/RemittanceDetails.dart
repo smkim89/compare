@@ -1,37 +1,54 @@
-
 import 'package:flutter/material.dart';
-import '../bloc/CompanyRateBloc.dart';
 import '../vo/CompanyRate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 
 class RemittanceDetails extends StatefulWidget {
+  // Todo를 들고 있을 필드를 선언합니다.
 
+  final CompanyRate companyRate;
 
+  // 생성자는 Todo를 인자로 받습니다.
+  RemittanceDetails({Key key, @required this.companyRate}) : super(key: key);
 
   @override
-  _SavedListState createState() => _SavedListState();
+  _RemittanceDetailsState createState() => _RemittanceDetailsState(companyRate: this.companyRate);
 }
 
-class _SavedListState extends State<RemittanceDetails> {
+class _RemittanceDetailsState extends State<RemittanceDetails> {
+  CompanyRate companyRate;
+
+  _RemittanceDetailsState({this.companyRate});
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Saved"),
-
+        leading: BackButton(
+            color: Colors.black
+        ),
+        backgroundColor: Colors.white,
+        title: CachedNetworkImage(
+          imageUrl: companyRate.companyLogo,
+          imageBuilder: (context, imageProvider) => Container(
+            height: 50,
+            width: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(50)),
+              image: DecorationImage(
+                image: imageProvider,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
       ),
-      body: _buildList(),
+      body: Text(companyRate.companyLogo)
     );
   }
 
-  Widget _buildList() {
-    // Devider도 인덱스에 포함된다.
-    return StreamBuilder<CompanyRate>(
-        stream: bloc.companyRateStream,
-        builder: (context, snapshot) {
-          return Text(snapshot.data.companyName);
-        }
-    );
-  }
+
+
 
 }
-

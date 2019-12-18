@@ -4,6 +4,7 @@ import 'package:compare/src/vo/CompanyRate.dart';
 import 'package:compare/src/vo/Currency.dart';
 import 'package:compare/src/bloc/RemittanceRateBloc.dart';
 import 'package:compare/src/bloc/RemittanceRateProvider.dart';
+import 'package:compare/src/ui/RemittanceDetails.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,9 +17,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final remittanceRateBloc = RemittanceRateProvider.of(context);
 
-
     remittanceRateBloc.getCurrency();
-
+    remittanceRateBloc.getCompanyRate(_selectedCurrency);
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(title: Text('TRANSMOA')),
@@ -82,13 +82,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     newList = list
-        .map((companyRate) =>
-        DropdownMenuItem(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                Image.asset('images/flag/flag_'+companyRate.country.toLowerCase()+'.png' , width: 30, height: 30,),
-                new Text(companyRate.currency),
+        .map((companyRate) => DropdownMenuItem(
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Image.asset(
+                      'images/flag/flag_' +
+                          companyRate.country.toLowerCase() +
+                          '.png',
+                      width: 30,
+                      height: 30,
+                    ),
+                    new Text(companyRate.currency),
 
 //                CachedNetworkImage(
 //                    imageUrl: companyRate.currencyImg,
@@ -96,9 +101,9 @@ class _HomeScreenState extends State<HomeScreen> {
 //                    width: 50.0,
 //                    fit: BoxFit.cover,
 //                )
-              ]),
-          value: companyRate.currency,
-        ))
+                  ]),
+              value: companyRate.currency,
+            ))
         .toList();
 
     return newList;
@@ -113,37 +118,37 @@ class _HomeScreenState extends State<HomeScreen> {
           // currency Field
           Expanded(
               child: TextField(
-                controller: _textController,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Enter Amount',
-                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                ),
-                onChanged: (amount) {
-                  setState(() {
-                    krwAmount = double.parse(amount) * fromCurrencyRate;
-                    krwAmount = double.parse(krwAmount.toStringAsFixed(2));
-                    currencyAmount = int.parse(amount);
-                  });
-                },
-              )),
+            controller: _textController,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Enter Amount',
+              contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            ),
+            onChanged: (amount) {
+              setState(() {
+                double krw = double.parse(amount) * fromCurrencyRate;
+                krw = double.parse(krw.toStringAsFixed(0));
+                krwAmount = krw.toInt().toString() + " KRW";
+                currencyAmount = int.parse(amount);
+              });
+            },
+          )),
           new Icon(MdiIcons.equal),
           //KRW
           Expanded(
               child: TextField(
-                controller: TextEditingController()
-                  ..text = krwAmount == null ? "" : krwAmount.toString(),
-                readOnly: true,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'KRW(원)',
-                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                ),
-
-              ))
+            controller: TextEditingController()
+              ..text = krwAmount == null ? "" : krwAmount.toString(),
+            readOnly: true,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'KRW(원)',
+              contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            ),
+          ))
         ],
       ),
     );
@@ -185,12 +190,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 numeric: false,
                 onSort: (i, b) {},
                 tooltip: "Remittance Option")
-          ], rows: _createRows(snapshot.data));
+          ], rows: _createRows(context, snapshot.data));
         });
   }
 }
 
-List<DataRow> _createRows(List<CompanyRate> list) {
+List<DataRow> _createRows(BuildContext context, List<CompanyRate> list) {
   List<DataRow> newList = new List<DataRow>();
   if (list == null || list.length == 0) {
     return newList;
@@ -200,26 +205,49 @@ List<DataRow> _createRows(List<CompanyRate> list) {
   fromCurrencyRate = 1 / list[0].rate;
 
   newList = list
-      .map((companyRate) =>
-      DataRow(cells: [
-        DataCell(Text(companyRate.companyName), onTap: () {}),
-        DataCell(Text(companyRate.rate.toString()), onTap: () {}),
-        DataCell(Text(companyRate.remittanceOption), onTap: () {}),
-      ]))
+      .map((companyRate) => DataRow(cells: [
+            DataCell(
+                CachedNetworkImage(
+                  imageUrl: companyRate.companyLogo,
+                  imageBuilder: (context, imageProvider) => Container(
+                    height: 50,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ), onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      RemittanceDetails(companyRate: companyRate),
+                ),
+              );
+
+
+            }),
+            DataCell(Text(companyRate.rate.toString()), onTap: () {}),
+            DataCell(Text(companyRate.remittanceOption), onTap: () {}),
+          ]))
       .toList();
 
   return newList;
 }
 
 List<String> _currencyList = ['BDT', 'USD', 'KHR', 'PHP']; // Option 1
-String _selectedCurrency; // Option 2
+String _selectedCurrency = 'USD'; // Option 2
 
 String _selectedRemittanceOption; // Option 2
 List<String> _remittanceOptions = ['CASH_PICK_UP', 'BANK_TRANSFER']; // Option 2
 
 double fromKrwCurrencyRate; // Option 2
 double fromCurrencyRate; // Option 2
-double krwAmount;
+String krwAmount;
 int currencyAmount;
 
 var companyRateList = <CompanyRate>[

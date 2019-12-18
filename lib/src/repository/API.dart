@@ -10,31 +10,38 @@ class API {
   static const String _url = "https://jsonplaceholder.typicode.com/todos";
 
 
-
-
-  String currency;
-  String currencyImg;
-  String currencyCode;
-
   var tempList = <CompanyRate>[
     CompanyRate(
         companyName: "Hanpass",
         countryCode: "BD",
         currency: "BDT",
         remittanceOption: "CASH_PICK_UP",
-        rate: 11.55),
+        rate: 11.55,
+        companyLogo: "http://drive.google.com/uc?export=view&id=1ofPZAFK5gA11ZM4eL8yqWKp5yMB7zhgj",
+        webUrl: "",
+        aosUrl: "",
+        iosUrl: ""
+    ),
     CompanyRate(
         companyName: "Hanpass",
         countryCode: "BD",
         currency: "BDT",
         remittanceOption: "BANK_TRANSFER",
-        rate: 11.23),
+        rate: 11.23,
+        companyLogo: "http://drive.google.com/uc?export=view&id=1ofPZAFK5gA11ZM4eL8yqWKp5yMB7zhgj",
+        webUrl: "",
+        aosUrl: "",
+        iosUrl: ""),
     CompanyRate(
         companyName: "E9PAY",
         countryCode: "BD",
         currency: "BDT",
         remittanceOption: "CASH_PICK_UP",
-        rate: 10.55)
+        rate: 10.55,
+        companyLogo: "http://drive.google.com/uc?export=view&id=1HumlYZezG4ntL8iXzbz5Y4CHJTv-sYjI",
+        webUrl: "",
+        aosUrl: "",
+        iosUrl: "")
   ];
 
   var _remittanceOptions = <RemittanceOption>[
