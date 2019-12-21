@@ -21,7 +21,13 @@ class _HomeScreenState extends State<HomeScreen> {
     remittanceRateBloc.getCompanyRate(_selectedCurrency);
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(title: Text('TRANSMOA')),
+      appBar: AppBar(
+          title: Text('TRANSMOA',
+              style: TextStyle(
+                fontSize: 40,
+                color: Colors.grey[400],
+              )),
+          backgroundColor: Colors.white),
       body: ListView(
         children: <Widget>[
           _buildCurrencyAndRemittanceOptionSection(remittanceRateBloc),
@@ -39,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
         stream: remittanceRateBloc.currencyStreamResults,
         builder: (context, snapshot) {
           return Container(
+            color: Colors.grey,
 //      margin: EdgeInsets.all(16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -111,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   _buildToCurrencySection() {
     return Container(
+      color: Colors.grey,
       //margin 설정을 하기위해 컨테이너를 감싸준다.
 //      margin: EdgeInsets.all(16),
       child: Row(
@@ -228,8 +236,6 @@ List<DataRow> _createRows(BuildContext context, List<CompanyRate> list) {
                       RemittanceDetails(companyRate: companyRate),
                 ),
               );
-
-
             }),
             DataCell(Text(companyRate.rate.toString()), onTap: () {}),
             DataCell(Text(companyRate.remittanceOption), onTap: () {}),

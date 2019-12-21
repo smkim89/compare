@@ -4,13 +4,69 @@ import 'src/bloc/RemittanceRateBloc.dart';
 import 'src/bloc/RemittanceRateProvider.dart';
 import 'package:compare/src/repository/API.dart';
 import 'dart:async';
+import 'package:firebase_admob/firebase_admob.dart';
+import 'dart:io' show Platform;
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+
+
+
+
   @override
   Widget build(BuildContext context) {
+    final String appIdForAos = "ca-app-pub-5340232752260728~2389229504";
+    final String appIdForIos = "ca-app-pub-5340232752260728~9489824470";
+
+    final String adUnitForAos = "ca-app-pub-5340232752260728/4535018874";
+    final String adUnitForIos = "ca-app-pub-5340232752260728/9595773866";
+
+    String adUnit = "";
+
+
+    if(Platform.isAndroid){
+      FirebaseAdMob.instance.initialize(appId: appIdForAos);
+      adUnit = adUnitForAos;
+    }else if (Platform.isIOS){
+      FirebaseAdMob.instance.initialize(appId: appIdForIos);
+      adUnit = adUnitForIos;
+    }
+
+
+    MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
+      keywords: <String>['game', 'LOL'],
+      contentUrl: 'https://flutter.io',
+      childDirected: false,
+      testDevices: <String>[], // Android emulators are considered test devices
+    );
+
+    BannerAd myBanner = BannerAd(
+      // Replace the testAdUnitId with an ad unit id from the AdMob dash.
+      // https://developers.google.com/admob/android/test-ads
+      // https://developers.google.com/admob/ios/test-ads
+      adUnitId: adUnit,
+      size: AdSize.smartBanner,
+      targetingInfo: targetingInfo,
+      listener: (MobileAdEvent event) {
+        print("BannerAd event is $event");
+      },
+    );
+
+    myBanner
+    // typically this happens well before the ad is shown
+      ..load()
+      ..show(
+        // Positions the banner ad 60 pixels from the bottom of the screen
+        anchorOffset: 0.0,
+        // Positions the banner ad 10 pixels from the center of the screen to the right
+        horizontalCenterOffset: 0.0,
+        // Banner Position
+        anchorType: AnchorType.bottom,
+      );
+
+
     return RemittanceRateProvider(
       remittanceRateBloc: RemittanceRateBloc(API()),
       child: MaterialApp(
@@ -69,8 +125,8 @@ class _SplashScreenState extends State<SplashScreen> {
                         backgroundColor: Colors.white,
                         radius: 50.0,
                         child: Icon(
-                          Icons.shopping_cart,
-                          color: Colors.lightGreenAccent,
+                          Icons.autorenew,
+                          color: Colors.redAccent,
                           size: 50.0,
                         ),
                       ),
