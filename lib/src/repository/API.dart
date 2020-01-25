@@ -4,51 +4,24 @@ import 'package:http/http.dart' as http;
 import 'package:compare/src/vo/CompanyRate.dart';
 import 'package:compare/src/vo/RemittanceOption.dart';
 import 'package:compare/src/vo/Currency.dart';
+import 'package:dio/dio.dart';
 
 class API {
   final http.Client _client = http.Client();
-  static const String _url = "https://jsonplaceholder.typicode.com/todos";
+  static const String _url =
+      "https://3baade5kxf.execute-api.ap-northeast-2.amazonaws.com/test";
+
+  static final API _singleton = API._internal();
+
+  Dio dio = new Dio();
+
+  factory API() {
+    return _singleton;
+  }
+
+  API._internal();
 
 
-  var tempList = <CompanyRate>[
-    CompanyRate(
-        companyName: "Hanpass",
-        countryCode: "BD",
-        countryName: "방글라데시",
-        currency: "BDT",
-        remittanceOption: "CASH_PICK_UP",
-        rate: 11.55,
-        fee: 5000,
-        companyLogo: "http://drive.google.com/uc?export=view&id=1ofPZAFK5gA11ZM4eL8yqWKp5yMB7zhgj",
-        webUrl: "",
-        aosUrl: "",
-        iosUrl: ""
-    ),
-    CompanyRate(
-        companyName: "Hanpass",
-        countryCode: "BD",
-        countryName: "방글라데시",
-        currency: "BDT",
-        remittanceOption: "BANK_TRANSFER",
-        rate: 11.23,
-        fee: 5000,
-        companyLogo: "http://drive.google.com/uc?export=view&id=1ofPZAFK5gA11ZM4eL8yqWKp5yMB7zhgj",
-        webUrl: "",
-        aosUrl: "",
-        iosUrl: ""),
-    CompanyRate(
-        companyName: "E9PAY",
-        countryCode: "BD",
-        countryName: "방글라데시",
-        currency: "BDT",
-        remittanceOption: "CASH_PICK_UP",
-        rate: 10.55,
-        fee: 7000,
-        companyLogo: "http://drive.google.com/uc?export=view&id=1HumlYZezG4ntL8iXzbz5Y4CHJTv-sYjI",
-        webUrl: "",
-        aosUrl: "",
-        iosUrl: "")
-  ];
 
   var _remittanceOptions = <RemittanceOption>[
     RemittanceOption(
@@ -59,47 +32,37 @@ class API {
         remittanceOptionName: "Bank Account Pay Out")
   ];
 
-  var _currencyList = <Currency>[
-    Currency(
-        country: "US",
-        countryName: "USA",
-        currency: "USD",
-        currencyImg: "https://shop.r10s.jp/tospa/cabinet/406104.gif",
-        currencyCode: "\$"),
-    Currency(
-        country: "BD",
-        countryName: "Bangladesh",
-        currency: "BDT",
-        currencyImg: "http://image.auction.co.kr/itemimage/c0/41/3a/c0413a956.jpg",
-        currencyCode: "\$"),
-  ];
 
 
+  Future<List<CompanyRate>> getCompanyRateList(String currency, String country) async {
 
-  Future<List<CompanyRate>> getCompanyRateList(String currency) async {
+    List<CompanyRate> list = [];
+    await dio.get("https://n28wlgso4f.execute-api.ap-northeast-2.amazonaws.com/real/getservicecompare?currency="+currency+"&country="+country).then((res) => res.data).then(
+            (companyRateList) => companyRateList
+            .forEach((companyRate) => list.add(CompanyRate.fromJson(companyRate))));
 
-    return tempList;
+
+    print('????');
+    return list;
   }
 
   Future<List<RemittanceOption>> getRemittanceOptionList(String currency) async {
-
     return _remittanceOptions;
   }
 
-  Future<List<Currency>> getCurrencyList() async {
+  Future<List<Currency>> getCoverage() async {
+    List<Currency> list = [];
 
-    return _currencyList;
+    print('!!!');
+
+
+    await dio.get("$_url/getCoverage").then((res) => res.data['body']).then(
+            (currencyList) => currencyList
+            .forEach((currency) => list.add(Currency.fromJson(currency))));
+
+
+    return list;
   }
 
-//
-//  Future<List<CompanyRate>> getCompanyRateList() async {
-//    List<CompanyRate> list = [];
-//    await _client
-//        .get(Uri.parse(_url))
-//        .then((res) => res.body)
-//        .then(json.decode)
-//        .then((todos) =>
-//            todos.forEach((todo) => list.add(CompanyRate.fromJson(todo))));
-//    return list;
-//  }
+
 }

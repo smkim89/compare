@@ -6,6 +6,7 @@ import 'package:compare/src/bloc/RemittanceRateBloc.dart';
 import 'package:compare/src/bloc/RemittanceRateProvider.dart';
 import 'package:compare/src/ui/RemittanceDetails.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:compare/src/repository/API.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -17,8 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final remittanceRateBloc = RemittanceRateProvider.of(context);
 
-    remittanceRateBloc.getCurrency();
-    remittanceRateBloc.getCompanyRate(_selectedCurrency);
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
@@ -42,79 +41,53 @@ class _HomeScreenState extends State<HomeScreen> {
   _buildCurrencyAndRemittanceOptionSection(
       RemittanceRateBloc remittanceRateBloc) {
     return StreamBuilder(
-        stream: remittanceRateBloc.currencyStreamResults,
-        builder: (context, snapshot) {
-          return Container(
-            color: Colors.grey,
-//      margin: EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                DropdownButton(
+      stream: remittanceRateBloc.currencyStreamResults,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) print(snapshot.error);
+        return snapshot.hasData
+            ? Container(
+                color: Colors.grey,
+                child: DropdownButton<Currency>(
+                    isExpanded: true,
                     hint: Text('Please choose a Curreny'),
                     // Not necessary for Option 1
-                    value: _selectedCurrency,
-                    onChanged: (newValue) {
-                      remittanceRateBloc.getCompanyRate(newValue);
+                    value: isLoad == false ? snapshot.data[0] : _selectedCurrency,
+                    onChanged: (Currency newValue) {
+                      isLoad = true;
+                      remittanceRateBloc.getCompanyRate(
+                          newValue.currency, newValue.country);
                       setState(() {
                         _selectedCurrency = newValue;
                       });
                     },
-                    items: _bulidCurrencyDropButtonWidjet(snapshot.data)),
-                DropdownButton(
-                    hint: Text('Remittance Options'),
-                    // Not necessary for Option 1
-                    value: _selectedRemittanceOption,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedRemittanceOption = newValue;
-                      });
-                    },
-                    items: _remittanceOptions.map((location) {
-                      return DropdownMenuItem(
-                        child: new Text(location),
-                        value: location,
-                      );
-                    }).toList()),
-              ],
-            ),
-          );
-        });
+                    items: snapshot.data
+                        .map<DropdownMenuItem<Currency>>((currencyVo) =>
+                            DropdownMenuItem<Currency>(
+                                child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+
+                                    children: <Widget>[
+                                      Image.asset(
+                                        'images/flag/flag_' +
+                                            currencyVo.country.toLowerCase() +
+                                            '.png',
+                                        width: 40,
+                                        height: 40,
+                                      ),
+                                      Spacer(flex: 30),
+                                      new Text(currencyVo.countryName),
+                                      Spacer(flex: 30),
+                                      new Text(currencyVo.currency),
+                                    ]),
+                                value: currencyVo))
+                        .toList()),
+              )
+            : Center(child: CircularProgressIndicator());
+      },
+    );
   }
 
-  _bulidCurrencyDropButtonWidjet(List<Currency> list) {
-    List<DropdownMenuItem> newList = new List<DropdownMenuItem>();
-    if (list == null || list.length == 0) {
-      return newList;
-    }
-
-    newList = list
-        .map((companyRate) => DropdownMenuItem(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Image.asset(
-                      'images/flag/flag_' +
-                          companyRate.country.toLowerCase() +
-                          '.png',
-                      width: 30,
-                      height: 30,
-                    ),
-                    new Text(companyRate.currency),
-
-//                CachedNetworkImage(
-//                    imageUrl: companyRate.currencyImg,
-//                    height: 50.0,
-//                    width: 50.0,
-//                    fit: BoxFit.cover,
-//                )
-                  ]),
-              value: companyRate.currency,
-            ))
-        .toList();
-
-    return newList;
-  }
 
   _buildToCurrencySection() {
     return Container(
@@ -122,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
       //margin 설정을 하기위해 컨테이너를 감싸준다.
 //      margin: EdgeInsets.all(16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           // currency Field
           Expanded(
@@ -130,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
             autofocus: true,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              border: InputBorder.none,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0), borderSide: BorderSide(color: Colors.white)),
               hintText: 'Enter Amount',
               contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
             ),
@@ -152,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
             readOnly: true,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              border: InputBorder.none,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0), borderSide: BorderSide(color: Colors.white)),
               hintText: 'KRW(원)',
               contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
             ),
@@ -182,23 +156,25 @@ class _HomeScreenState extends State<HomeScreen> {
     return StreamBuilder(
         stream: remittanceRateBloc.results,
         builder: (context, snapshot) {
-          return DataTable(columns: <DataColumn>[
-            DataColumn(
-                label: Text("Company"),
-                numeric: false,
-                onSort: (i, b) {},
-                tooltip: "company name"),
-            DataColumn(
-                label: Text("Rate(KRW)"),
-                numeric: false,
-                onSort: (i, b) {},
-                tooltip: "Exchange Rate"),
-            DataColumn(
-                label: Text("Options"),
-                numeric: false,
-                onSort: (i, b) {},
-                tooltip: "Remittance Option")
-          ], rows: _createRows(context, snapshot.data));
+          return snapshot.hasData
+              ? DataTable(columns: <DataColumn>[
+                  DataColumn(
+                      label: Text("Company"),
+                      numeric: false,
+                      onSort: (i, b) {},
+                      tooltip: "company name"),
+                  DataColumn(
+                      label: Text("Rate(KRW)"),
+                      numeric: false,
+                      onSort: (i, b) {},
+                      tooltip: "Exchange Rate"),
+                  DataColumn(
+                      label: Text("Options"),
+                      numeric: false,
+                      onSort: (i, b) {},
+                      tooltip: "Remittance Option")
+                ], rows: _createRows(context, snapshot.data))
+              : Container();
         });
   }
 }
@@ -245,36 +221,14 @@ List<DataRow> _createRows(BuildContext context, List<CompanyRate> list) {
   return newList;
 }
 
-List<String> _currencyList = ['BDT', 'USD', 'KHR', 'PHP']; // Option 1
-String _selectedCurrency = 'USD'; // Option 2
+bool isLoad = false;
 
-String _selectedRemittanceOption; // Option 2
-List<String> _remittanceOptions = ['CASH_PICK_UP', 'BANK_TRANSFER']; // Option 2
+Currency _selectedCurrency =
+    Currency(country: "KH", countryName: "Cambodia", currency: "KHR");
 
 double fromKrwCurrencyRate; // Option 2
 double fromCurrencyRate; // Option 2
 String krwAmount;
 int currencyAmount;
-
-var companyRateList = <CompanyRate>[
-  CompanyRate(
-      companyName: "Hanpass",
-      countryCode: "BD",
-      currency: "BDT",
-      remittanceOption: "CASH_PICK_UP",
-      rate: 11.55),
-  CompanyRate(
-      companyName: "Hanpass",
-      countryCode: "BD",
-      currency: "BDT",
-      remittanceOption: "BANK_TRANSFER",
-      rate: 11.23),
-  CompanyRate(
-      companyName: "E9PAY",
-      countryCode: "BD",
-      currency: "BDT",
-      remittanceOption: "CASH_PICK_UP",
-      rate: 10.55)
-];
 
 final TextEditingController _textController = new TextEditingController();

@@ -27,15 +27,15 @@ class RemittanceRateBloc{
     currencyStream.close();
   }
 
-  void getCompanyRate(String currency) {
-    api.getCompanyRateList(currency).then((companyRates) {
+  void getCompanyRate(String currency, String country) {
+    api.getCompanyRateList(currency, country).then((companyRates) {
       ctrl.add(companyRates);
     });
   }
 
 
   void getCurrency() {
-    api.getCurrencyList().then((currencys) {
+    api.getCoverage().then((currencys) {
       currencyStream.add(currencys);
     });
   }

@@ -6,7 +6,7 @@ import 'package:compare/src/repository/API.dart';
 import 'dart:async';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'dart:io' show Platform;
-
+import 'package:compare/src/vo/Currency.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -96,10 +96,21 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<Timer> loadData() async {
+
     return new Timer(Duration(seconds: 5), onDoneLoading);
   }
 
   onDoneLoading() {
+    Currency _selectedCurrency = Currency(
+        country: "KH",
+        countryName: "USA",
+        currency: "KHR"
+    );
+
+    final remittanceRateBloc = RemittanceRateProvider.of(context);
+
+    remittanceRateBloc.getCurrency();
+//    remittanceRateBloc.getCompanyRate(_selectedCurrency.currency, _selectedCurrency.country);
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
